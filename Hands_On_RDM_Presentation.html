@@ -1,0 +1,2455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hands-On Research Data Management | Kay P Maye</title>
+    <style>
+        :root {
+            --tulane-green: #285C4D;
+            --tulane-green-dark: #1e4a3d;
+            --tulane-blue: #71C5E8;
+            --tulane-blue-light: #a8ddf2;
+            --storm-shutters: #00778B;
+            --medallion: #CC9900;
+            --olive-branch: #658D1B;
+            --verdigris: #71DBD4;
+            --light-bg: #f8fafb;
+            --text-dark: #2c3e50;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--tulane-green);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .nav-title {
+            color: var(--white);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-selector {
+            padding: 8px 12px;
+            border: 2px solid var(--tulane-blue);
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--tulane-green);
+            font-size: 0.95rem;
+            cursor: pointer;
+            min-width: 280px;
+        }
+
+        .nav-btn {
+            background: var(--tulane-blue);
+            color: var(--tulane-green-dark);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .page-indicator {
+            color: var(--tulane-blue);
+            font-size: 0.9rem;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Main content */
+        .presentation {
+            margin-top: 70px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Title slide */
+        .title-slide {
+            text-align: center;
+            padding: 60px 40px;
+            background: linear-gradient(135deg, var(--tulane-green) 0%, var(--storm-shutters) 100%);
+            border-radius: 16px;
+            color: var(--white);
+            min-height: calc(100vh - 130px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .title-slide h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.5rem;
+            color: var(--tulane-blue-light);
+            margin-bottom: 40px;
+        }
+
+        .title-slide .presenter {
+            font-size: 1.3rem;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid var(--tulane-blue);
+            display: inline-block;
+        }
+
+        .title-slide .institution {
+            font-size: 1.1rem;
+            color: var(--tulane-blue-light);
+            margin-top: 10px;
+        }
+
+        /* Content slides */
+        .content-slide {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 45px 50px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            min-height: calc(100vh - 130px);
+        }
+
+        .content-slide h2 {
+            color: var(--tulane-green);
+            font-size: 2.1rem;
+            margin-bottom: 35px;
+            padding-bottom: 18px;
+            border-bottom: 3px solid var(--tulane-blue);
+            line-height: 1.3;
+        }
+
+        .content-slide h3 {
+            color: var(--storm-shutters);
+            font-size: 1.45rem;
+            margin: 35px 0 20px 0;
+            line-height: 1.4;
+        }
+
+        .content-slide h4 {
+            color: var(--tulane-green);
+            font-size: 1.2rem;
+            margin: 25px 0 15px 0;
+            line-height: 1.4;
+        }
+
+        .content-slide p {
+            margin-bottom: 18px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .content-slide ul, .content-slide ol {
+            margin: 20px 0 20px 30px;
+        }
+
+        .content-slide li {
+            margin-bottom: 14px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .content-slide li ul, .content-slide li ol {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #e8f5f1 0%, #e1f4fb 100%);
+            border-left: 6px solid var(--tulane-green);
+            padding: 30px 35px;
+            margin: 35px 0;
+            border-radius: 0 12px 12px 0;
+            line-height: 2;
+        }
+
+        .highlight-box ul, .highlight-box ol {
+            margin-top: 18px;
+            margin-bottom: 12px;
+        }
+
+        .highlight-box li {
+            margin-bottom: 12px;
+        }
+
+        .highlight-box.warning {
+            background: linear-gradient(135deg, #fef3e2 0%, #ffecd2 100%);
+            border-left-color: var(--medallion);
+        }
+
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 35px 40px;
+            border-radius: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1.05rem;
+            overflow-x: auto;
+            margin: 30px 0;
+            line-height: 2.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            letter-spacing: 0.3px;
+        }
+
+        .code-example .comment {
+            color: #68d391;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .code-example .highlight {
+            color: var(--tulane-blue);
+            font-weight: 600;
+        }
+
+        /* Activity boxes */
+        .activity-box {
+            background: linear-gradient(135deg, #fef9e7 0%, #fff8e1 100%);
+            border: 2px solid var(--medallion);
+            border-radius: 16px;
+            padding: 35px 40px;
+            margin: 40px 0;
+        }
+
+        .activity-box h4 {
+            color: var(--medallion);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 0;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+
+        .activity-box h4::before {
+            content: "✏️";
+            font-size: 1.5rem;
+        }
+
+        .activity-content {
+            margin-top: 25px;
+            line-height: 2;
+        }
+
+        .activity-content p {
+            margin-bottom: 14px;
+            margin-top: 22px;
+        }
+
+        .activity-content p:first-child {
+            margin-top: 0;
+        }
+
+        .activity-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.08rem;
+            margin: 14px 0 24px 0;
+            transition: border-color 0.3s;
+            line-height: 1.6;
+        }
+
+        .activity-input:focus {
+            outline: none;
+            border-color: var(--tulane-green);
+        }
+
+        .activity-textarea {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.08rem;
+            margin: 14px 0 24px 0;
+            min-height: 130px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.8;
+        }
+
+        .activity-textarea:focus {
+            outline: none;
+            border-color: var(--tulane-green);
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            padding: 16px 10px;
+            border-bottom: 1px solid #eee;
+            line-height: 1.8;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            accent-color: var(--tulane-green);
+            cursor: pointer;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 1.1rem;
+        }
+
+        .checklist-item.checked label {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        .data-table th {
+            background: var(--tulane-green);
+            color: var(--white);
+            padding: 18px 24px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+
+        .data-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .data-table tr:hover {
+            background: #e8f5f1;
+        }
+
+        /* Two column layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 35px 0;
+        }
+
+        .column {
+            background: #f8f9fa;
+            padding: 30px 35px;
+            border-radius: 14px;
+            line-height: 2;
+        }
+
+        .column h4 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .column ul, .column ol {
+            margin-left: 22px;
+        }
+
+        .column li {
+            margin-bottom: 14px;
+        }
+
+        .column p {
+            margin-bottom: 16px;
+        }
+
+        /* Key points */
+        .key-point {
+            display: flex;
+            align-items: flex-start;
+            gap: 22px;
+            padding: 24px 28px;
+            background: #f8f9fa;
+            border-radius: 14px;
+            margin: 18px 0;
+            line-height: 1.9;
+        }
+
+        .key-point-icon {
+            background: var(--tulane-green);
+            color: var(--white);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 1.15rem;
+        }
+
+        /* Links */
+        a {
+            color: var(--storm-shutters);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--storm-shutters);
+        }
+
+        a:hover {
+            color: var(--tulane-green);
+            border-bottom-style: solid;
+        }
+
+        /* Footer */
+        .slide-footer {
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        /* Email responses panel */
+        .email-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--white);
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 20px 24px;
+            z-index: 999;
+            max-width: 320px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .email-panel.collapsed {
+            transform: translateY(calc(100% - 50px));
+        }
+
+        .email-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .email-panel-header h4 {
+            color: var(--tulane-green);
+            margin: 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .email-panel-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--tulane-green);
+            padding: 5px;
+            transition: transform 0.3s;
+        }
+
+        .email-panel.collapsed .email-panel-toggle {
+            transform: rotate(180deg);
+        }
+
+        .email-panel-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+        }
+
+        .email-panel.collapsed .email-panel-content {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        .email-input-group {
+            margin-bottom: 15px;
+        }
+
+        .email-input-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .email-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .email-input:focus {
+            outline: none;
+            border-color: var(--tulane-green);
+        }
+
+        .email-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .email-btn.primary {
+            background: var(--tulane-green);
+            color: var(--white);
+        }
+
+        .email-btn.primary:hover {
+            background: var(--tulane-green-dark);
+            transform: translateY(-2px);
+        }
+
+        .email-btn.secondary {
+            background: var(--light-bg);
+            color: var(--tulane-green);
+            border: 2px solid var(--tulane-green);
+        }
+
+        .email-btn.secondary:hover {
+            background: #e8f5f1;
+        }
+
+        .email-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .email-status {
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .email-status.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .email-status.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .email-status.info {
+            display: block;
+            background: #e8f5f1;
+            color: var(--tulane-green);
+        }
+
+        .response-count {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .email-panel {
+                left: 10px;
+                right: 10px;
+                max-width: none;
+                bottom: 10px;
+            }
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--tulane-blue);
+            transition: width 0.3s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .nav-title {
+                width: 100%;
+                text-align: center;
+            }
+
+            .page-selector {
+                min-width: 200px;
+            }
+
+            .title-slide h1 {
+                font-size: 2rem;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .content-slide {
+                padding: 30px 22px;
+            }
+
+            .content-slide h2 {
+                font-size: 1.7rem;
+                margin-bottom: 25px;
+            }
+
+            .content-slide h3 {
+                font-size: 1.3rem;
+                margin: 28px 0 16px 0;
+            }
+
+            .content-slide p {
+                line-height: 1.9;
+            }
+
+            .content-slide li {
+                line-height: 1.8;
+                margin-bottom: 12px;
+            }
+
+            .code-example {
+                padding: 25px 22px;
+                font-size: 0.92rem;
+                line-height: 2.2;
+            }
+
+            .activity-box {
+                padding: 28px 22px;
+            }
+
+            .highlight-box {
+                padding: 24px 22px;
+                line-height: 1.9;
+            }
+
+            .column {
+                padding: 24px 22px;
+                line-height: 1.9;
+            }
+
+            .key-point {
+                padding: 20px 18px;
+                gap: 16px;
+            }
+
+            .data-table {
+                font-size: 0.92rem;
+            }
+
+            .data-table th, .data-table td {
+                padding: 14px 16px;
+            }
+        }
+
+        /* Medium screens (tablets) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .content-slide {
+                padding: 40px 35px;
+            }
+
+            .code-example {
+                padding: 30px 32px;
+                line-height: 2.2;
+            }
+
+            .column {
+                padding: 26px 28px;
+            }
+
+            .two-column {
+                gap: 30px;
+            }
+
+            .activity-box {
+                padding: 32px 35px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .nav-container, .progress-bar, .email-panel-toggle, .email-panel {
+                display: none;
+            }
+
+            .slide {
+                display: block !important;
+                page-break-after: always;
+            }
+
+            .presentation {
+                margin-top: 0;
+            }
+        }
+
+        /* Email Panel */
+        .email-panel-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--tulane-green);
+            color: var(--white);
+            border: none;
+            padding: 16px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .email-panel-toggle:hover {
+            background: var(--tulane-green-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .email-panel-toggle .icon {
+            font-size: 1.2rem;
+        }
+
+        .email-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            z-index: 998;
+            width: 380px;
+            max-width: calc(100vw - 60px);
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .email-panel.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .email-panel h3 {
+            color: var(--tulane-green);
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+        }
+
+        .email-panel .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .email-panel label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .email-panel input[type="email"],
+        .email-panel input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .email-panel input[type="email"]:focus,
+        .email-panel input[type="text"]:focus {
+            outline: none;
+            border-color: var(--tulane-green);
+        }
+
+        .email-panel .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .email-panel .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .email-panel .btn-primary {
+            background: var(--tulane-green);
+            color: var(--white);
+        }
+
+        .email-panel .btn-primary:hover {
+            background: var(--tulane-green-dark);
+        }
+
+        .email-panel .btn-secondary {
+            background: #f0f0f0;
+            color: var(--text-dark);
+        }
+
+        .email-panel .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .email-panel .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+        }
+
+        .email-panel .close-btn:hover {
+            color: var(--text-dark);
+        }
+
+        .email-panel .response-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .email-panel .response-preview h4 {
+            color: var(--storm-shutters);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .email-panel .response-count {
+            display: inline-block;
+            background: var(--tulane-blue);
+            color: var(--tulane-green-dark);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .email-panel .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .email-panel .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .email-panel-toggle {
+                bottom: 20px;
+                right: 20px;
+                padding: 14px 20px;
+                font-size: 0.95rem;
+            }
+
+            .email-panel {
+                bottom: 90px;
+                right: 15px;
+                left: 15px;
+                width: auto;
+                padding: 25px 20px;
+            }
+
+            .email-panel .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="nav-title">Hands-On Research Data Management</div>
+        <div class="nav-controls">
+            <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+            <select class="page-selector" id="slideSelector" onchange="goToSlide(this.value)">
+                <option value="0">Title Slide</option>
+                <option value="1">Introduction & Goals</option>
+                <option value="2">Section 1: File Naming Conventions</option>
+                <option value="3">File Naming Best Practices</option>
+                <option value="4">Activity: Design Your Convention</option>
+                <option value="5">Section 2: Documentation</option>
+                <option value="6">README Files & Data Dictionaries</option>
+                <option value="7">Activity: Create a Data Dictionary</option>
+                <option value="8">Section 3: Metadata Standards</option>
+                <option value="9">Finding Your Metadata Standard</option>
+                <option value="10">Section 4: Data Security</option>
+                <option value="11">The 3-2-1 Backup Rule</option>
+                <option value="12">Encryption & Access Control</option>
+                <option value="13">Activity: Audit Your Backup Strategy</option>
+                <option value="14">Section 5: Version Control</option>
+                <option value="15">Section 6: Preparing for Sharing</option>
+                <option value="16">De-identification Techniques</option>
+                <option value="17">Activity: Sharing Preparation Checklist</option>
+                <option value="18">Summary & Action Planning</option>
+                <option value="19">Resources & Final Activity</option>
+            </select>
+            <span class="page-indicator" id="pageIndicator">1 / 20</span>
+            <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+        </div>
+    </nav>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <main class="presentation">
+        <!-- Slide 0: Title -->
+        <section class="slide active" id="slide-0">
+            <div class="title-slide">
+                <h1>Hands-On Research Data Management</h1>
+                <p class="subtitle">Practical Skills for Organizing, Documenting, Securing, and Sharing Your Data</p>
+                <div>
+                    <p class="presenter">Presented by Kay P Maye</p>
+                    <p class="institution">Howard-Tilton Memorial Library<br>Tulane University</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 1: Introduction -->
+        <section class="slide" id="slide-1">
+            <div class="content-slide">
+                <h2>Introduction & Workshop Goals</h2>
+                
+                <p>This workshop focuses on <strong>practical actions</strong> researchers can take to make their data more manageable, findable, and secure. Rather than policy compliance, we emphasize skills you can apply immediately.</p>
+
+                <h3>By the end of this session, you will be able to:</h3>
+                <ol>
+                    <li>Establish and implement a consistent file naming convention</li>
+                    <li>Create effective documentation including README files and data dictionaries</li>
+                    <li>Apply appropriate metadata standards for your discipline</li>
+                    <li>Implement the 3-2-1 backup strategy for data protection</li>
+                    <li>Secure sensitive data using encryption and access controls</li>
+                    <li>Use version control to track changes to your data and code</li>
+                    <li>Prepare data for sharing by selecting formats and de-identification methods</li>
+                </ol>
+
+                <div class="highlight-box">
+                    <strong>Workshop Format:</strong> 2–3 hours total (sections can be delivered independently)<br>
+                    <strong>Approach:</strong> Short concept introductions + hands-on activities<br>
+                    <strong>Materials:</strong> Bring laptops and sample data files from current projects
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 2: File Naming -->
+        <section class="slide" id="slide-2">
+            <div class="content-slide">
+                <h2>Section 1: File Organization & Naming Conventions</h2>
+                
+                <h3>Why This Matters</h3>
+                <p>Poor file organization leads to:</p>
+                <ul>
+                    <li>Wasted time searching for files</li>
+                    <li>Accidental data loss or overwriting</li>
+                    <li>Version confusion ("final_v2_FINAL_edited.docx")</li>
+                    <li>Difficulty reproducing your own work</li>
+                    <li>Collaboration breakdowns</li>
+                </ul>
+
+                <div class="highlight-box">
+                    A consistent naming system allows you to <strong>identify files at a glance</strong>, locate data quickly, and collaborate effectively with others—including your future self.
+                </div>
+
+                <h3>Elements to Include in File Names</h3>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Core Elements</h4>
+                        <ul>
+                            <li><strong>Project identifier:</strong> Short code or abbreviation</li>
+                            <li><strong>Date:</strong> YYYYMMDD or YYYY-MM-DD</li>
+                            <li><strong>Description:</strong> Brief, meaningful descriptor</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>Optional Elements</h4>
+                        <ul>
+                            <li><strong>Version number:</strong> v01, v02 (leading zeros)</li>
+                            <li><strong>Creator initials:</strong> For collaborative projects</li>
+                            <li><strong>Sequential numbers:</strong> 001, 002, 003</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 3: File Naming Best Practices -->
+        <section class="slide" id="slide-3">
+            <div class="content-slide">
+                <h2>File Naming Best Practices</h2>
+
+                <h3>The Rules</h3>
+                <ul>
+                    <li>Keep names under <strong>40–50 characters</strong> when possible</li>
+                    <li><strong>Avoid spaces</strong> – use underscores (_) or hyphens (-) instead</li>
+                    <li><strong>Avoid special characters:</strong> ~ ! @ # $ % ^ & * ( ) ` ; : &lt; &gt; ? . , [ ] { } ' " |</li>
+                    <li>Use only <strong>alphanumeric characters</strong> (A-Z, a-z, 0-9)</li>
+                    <li>Be <strong>consistent with capitalization</strong> (choose one style)</li>
+                    <li><strong>Document your convention</strong> in a README file</li>
+                </ul>
+
+                <h3>Example Conventions</h3>
+                <div class="code-example">
+<span class="comment"># Survey data:</span>
+PROJ_Survey_ParticipantID_YYYYMMDD.csv
+<span class="highlight">Example:</span> ClimateStudy_Survey_P042_20260115.csv
+
+<span class="comment"># Lab images:</span>
+YYYYMMDD_ExperimentID_SampleID_Condition_###.tif
+<span class="highlight">Example:</span> 20260115_EXP03_S12_Control_001.tif
+
+<span class="comment"># Documents:</span>
+ProjectAbbr_DocType_YYYYMMDD_v##.docx
+<span class="highlight">Example:</span> GenomeProj_Protocol_20260115_v02.docx
+                </div>
+
+                <h3>Example Folder Structure</h3>
+                <div class="code-example">
+ProjectName/
+├── README.txt
+├── 01_RawData/          <span class="comment">(original, unmodified data)</span>
+├── 02_ProcessedData/    <span class="comment">(cleaned, transformed data)</span>
+├── 03_Analysis/         <span class="comment">(scripts, statistical output)</span>
+├── 04_Documentation/    <span class="comment">(protocols, codebooks)</span>
+├── 05_Outputs/          <span class="comment">(figures, tables, reports)</span>
+└── Archive/             <span class="comment">(old versions, deprecated files)</span>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Activity 1 -->
+        <section class="slide" id="slide-4">
+            <div class="content-slide">
+                <h2>Activity 1: Design Your File Naming Convention</h2>
+                
+                <div class="activity-box">
+                    <h4>15 Minutes</h4>
+                    <div class="activity-content">
+                        <p><strong>Step 1:</strong> Think about a current or recent research project.</p>
+                        
+                        <p><strong>Step 2:</strong> List the key elements that distinguish your files:</p>
+                        <textarea class="activity-textarea" placeholder="Examples: date, experiment number, condition, sample ID, participant, version..."></textarea>
+
+                        <p><strong>Step 3:</strong> Design a naming template:</p>
+                        <input type="text" class="activity-input" placeholder="[element1]_[element2]_[element3].ext">
+
+                        <p><strong>Step 4:</strong> Write out 3 example file names using your convention:</p>
+                        <input type="text" class="activity-input" placeholder="Example 1:">
+                        <input type="text" class="activity-input" placeholder="Example 2:">
+                        <input type="text" class="activity-input" placeholder="Example 3:">
+
+                        <p><strong>Step 5:</strong> Document any abbreviations you use:</p>
+                        <textarea class="activity-textarea" placeholder="EXP = Experiment, CTRL = Control, TRT = Treatment..."></textarea>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>Discussion Question:</strong> Share with a partner—can they understand what each file contains just from the name?
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 5: Documentation -->
+        <section class="slide" id="slide-5">
+            <div class="content-slide">
+                <h2>Section 2: Creating Effective Documentation</h2>
+
+                <h3>Why Documentation Matters</h3>
+                <p>Documentation enables others (including your future self) to understand, interpret, and reuse your data. Without proper documentation, data loses its meaning and value over time.</p>
+
+                <div class="highlight-box warning">
+                    <strong>Key Principle:</strong> Start documenting <em>as you collect data</em>, not at the end of the project!
+                </div>
+
+                <h3>Types of Documentation</h3>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>README Files</h4>
+                        <p>The first file anyone should read when encountering your dataset. Provides context and navigation.</p>
+                        <p><strong>Format:</strong> Plain text (.txt) or Markdown (.md) for maximum accessibility.</p>
+                    </div>
+                    <div class="column">
+                        <h4>Data Dictionaries / Codebooks</h4>
+                        <p>Define every variable/column in your dataset. Essential for tabular data (spreadsheets, databases).</p>
+                        <p><strong>Format:</strong> Spreadsheet or plain text that accompanies your data files.</p>
+                    </div>
+                </div>
+
+                <h3>Other Documentation Types</h3>
+                <ul>
+                    <li><strong>Protocols:</strong> Step-by-step procedures for data collection</li>
+                    <li><strong>Lab notebooks:</strong> Detailed records of experiments</li>
+                    <li><strong>Analysis scripts:</strong> Commented code explaining each step</li>
+                    <li><strong>Changelogs:</strong> Record of modifications to files over time</li>
+                </ul>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 6: README & Data Dictionary -->
+        <section class="slide" id="slide-6">
+            <div class="content-slide">
+                <h2>README Files & Data Dictionaries</h2>
+
+                <h3>README Contents Checklist</h3>
+                <div class="two-column">
+                    <div class="column">
+                        <ul>
+                            <li>☐ Title and brief description</li>
+                            <li>☐ Creator(s) with contact info & ORCID</li>
+                            <li>☐ Date(s) of data collection</li>
+                            <li>☐ Methods and instruments used</li>
+                            <li>☐ File list with descriptions</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <ul>
+                            <li>☐ File naming convention explanation</li>
+                            <li>☐ Software requirements & versions</li>
+                            <li>☐ Related publications</li>
+                            <li>☐ License/terms of use</li>
+                            <li>☐ Funding acknowledgments</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <p><strong>Template:</strong> <a href="https://data.research.cornell.edu/data-management/sharing/readme/" target="_blank">Cornell University README Template</a></p>
+
+                <h3>Data Dictionary Elements</h3>
+                <table class="data-table">
+                    <tr>
+                        <th>Variable</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Units</th>
+                        <th>Values</th>
+                        <th>Missing</th>
+                    </tr>
+                    <tr>
+                        <td>participant_id</td>
+                        <td>Unique identifier</td>
+                        <td>Text</td>
+                        <td>N/A</td>
+                        <td>P001-P150</td>
+                        <td>N/A</td>
+                    </tr>
+                    <tr>
+                        <td>age_years</td>
+                        <td>Age at enrollment</td>
+                        <td>Integer</td>
+                        <td>Years</td>
+                        <td>18-85</td>
+                        <td>-999</td>
+                    </tr>
+                    <tr>
+                        <td>treatment</td>
+                        <td>Assigned group</td>
+                        <td>Categorical</td>
+                        <td>N/A</td>
+                        <td>1=Control, 2=Drug A, 3=Drug B</td>
+                        <td>N/A</td>
+                    </tr>
+                </table>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 7: Activity 2 -->
+        <section class="slide" id="slide-7">
+            <div class="content-slide">
+                <h2>Activity 2: Create a Data Dictionary</h2>
+
+                <div class="activity-box">
+                    <h4>15 Minutes</h4>
+                    <div class="activity-content">
+                        <p><strong>Step 1:</strong> Open a spreadsheet or dataset from your research (or use one you're familiar with).</p>
+                        
+                        <p><strong>Step 2:</strong> List 5 variables/columns and define them below:</p>
+                        
+                        <table class="data-table" style="background: white;">
+                            <tr>
+                                <th>Variable Name</th>
+                                <th>Description</th>
+                                <th>Data Type</th>
+                                <th>Units/Values</th>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                                <td><input type="text" class="activity-input" style="margin: 0; width: 100%; padding: 12px 14px;"></td>
+                            </tr>
+                        </table>
+
+                        <p><strong>Reflection:</strong> Were there any variables you couldn't fully describe?</p>
+                        <textarea class="activity-textarea" placeholder="What does this tell you about documenting while you collect data?"></textarea>
+                    </div>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 8: Metadata -->
+        <section class="slide" id="slide-8">
+            <div class="content-slide">
+                <h2>Section 3: Applying Metadata Standards</h2>
+
+                <h3>What Is Metadata?</h3>
+                <p>Metadata is "data about data" – structured information that describes, explains, locates, and makes it easier to retrieve, use, and manage data.</p>
+
+                <div class="highlight-box">
+                    <strong>Think of it like the label on a jar:</strong> It tells you what's inside, when it was made, and how to use it.
+                </div>
+
+                <h3>Types of Metadata</h3>
+                <div class="two-column">
+                    <div class="column">
+                        <div class="key-point">
+                            <div class="key-point-icon">D</div>
+                            <div>
+                                <strong>Descriptive</strong><br>
+                                Title, creator, subject, keywords – helps people find your data
+                            </div>
+                        </div>
+                        <div class="key-point">
+                            <div class="key-point-icon">S</div>
+                            <div>
+                                <strong>Structural</strong><br>
+                                File format, relationships between files – helps systems process your data
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="key-point">
+                            <div class="key-point-icon">A</div>
+                            <div>
+                                <strong>Administrative</strong><br>
+                                Creation date, access rights, preservation information
+                            </div>
+                        </div>
+                        <div class="key-point">
+                            <div class="key-point-icon">T</div>
+                            <div>
+                                <strong>Technical</strong><br>
+                                File size, software requirements, compression methods
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 9: Finding Metadata Standards -->
+        <section class="slide" id="slide-9">
+            <div class="content-slide">
+                <h2>Finding Your Discipline's Metadata Standard</h2>
+
+                <p>Using a community-accepted metadata standard makes your data more <strong>interoperable</strong> and <strong>discoverable</strong>.</p>
+
+                <h3>Common Standards by Discipline</h3>
+                <table class="data-table">
+                    <tr>
+                        <th>Discipline</th>
+                        <th>Standard</th>
+                        <th>Use Case</th>
+                    </tr>
+                    <tr>
+                        <td>General / Cross-disciplinary</td>
+                        <td>Dublin Core, DataCite</td>
+                        <td>Basic descriptive metadata for any dataset</td>
+                    </tr>
+                    <tr>
+                        <td>Social Sciences</td>
+                        <td>DDI (Data Documentation Initiative)</td>
+                        <td>Survey data, questionnaires, statistical data</td>
+                    </tr>
+                    <tr>
+                        <td>Ecology</td>
+                        <td>EML (Ecological Metadata Language)</td>
+                        <td>Environmental and ecological datasets</td>
+                    </tr>
+                    <tr>
+                        <td>Biology</td>
+                        <td>Darwin Core</td>
+                        <td>Biodiversity, species observations, specimens</td>
+                    </tr>
+                    <tr>
+                        <td>Geospatial</td>
+                        <td>ISO 19115, FGDC-CSDGM</td>
+                        <td>GIS data, maps, spatial information</td>
+                    </tr>
+                    <tr>
+                        <td>Neuroimaging</td>
+                        <td>BIDS</td>
+                        <td>MRI, fMRI, EEG data organization</td>
+                    </tr>
+                    <tr>
+                        <td>Humanities</td>
+                        <td>TEI, VRA Core</td>
+                        <td>Text encoding, visual resources</td>
+                    </tr>
+                </table>
+
+                <h3>Where to Find Standards</h3>
+                <ul>
+                    <li><a href="https://rd-alliance.github.io/metadata-directory/standards/" target="_blank">RDA Metadata Standards Catalog</a></li>
+                    <li><a href="https://fairsharing.org/" target="_blank">FAIRsharing.org</a></li>
+                    <li><a href="https://www.dcc.ac.uk/guidance/standards/" target="_blank">DCC Disciplinary Metadata</a></li>
+                    <li>Check what your target repository requires</li>
+                    <li>Ask your subject librarian!</li>
+                </ul>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 10: Security Overview -->
+        <section class="slide" id="slide-10">
+            <div class="content-slide">
+                <h2>Section 4: Data Security and Backup</h2>
+
+                <h3>Why Security Matters</h3>
+                <p>Research data can be lost through:</p>
+                <ul>
+                    <li><strong>Hardware failure:</strong> Hard drives fail, laptops get stolen</li>
+                    <li><strong>Human error:</strong> Accidental deletion, overwriting files</li>
+                    <li><strong>Natural disasters:</strong> Floods, fires, power surges</li>
+                    <li><strong>Cyber threats:</strong> Ransomware, unauthorized access</li>
+                    <li><strong>Software issues:</strong> Corruption, incompatibility</li>
+                </ul>
+
+                <div class="highlight-box warning">
+                    <strong>The Question Isn't IF Your Data Will Be at Risk—It's WHEN</strong><br>
+                    Proactive planning prevents catastrophic loss.
+                </div>
+
+                <h3>Two Key Strategies</h3>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>🔄 Backup</h4>
+                        <p>Creating copies of your data in multiple locations so you can recover if something goes wrong.</p>
+                        <p><em>Protects against: loss, corruption, hardware failure</em></p>
+                    </div>
+                    <div class="column">
+                        <h4>🔒 Security</h4>
+                        <p>Protecting your data from unauthorized access, modification, or disclosure.</p>
+                        <p><em>Protects against: theft, breaches, compliance violations</em></p>
+                    </div>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 11: 3-2-1 Backup -->
+        <section class="slide" id="slide-11">
+            <div class="content-slide">
+                <h2>The 3-2-1 Backup Rule</h2>
+
+                <p>This proven strategy protects against data loss from hardware failure, theft, natural disasters, and ransomware:</p>
+
+                <div class="two-column">
+                    <div class="column" style="background: var(--tulane-green); color: white; text-align: center;">
+                        <h3 style="color: var(--tulane-blue-light); font-size: 3rem; margin: 0;">3</h3>
+                        <p style="font-size: 1.1rem;"><strong>Copies</strong> of your data<br>(1 original + 2 backups)</p>
+                    </div>
+                    <div class="column" style="background: var(--storm-shutters); color: white; text-align: center;">
+                        <h3 style="color: var(--tulane-blue-light); font-size: 3rem; margin: 0;">2</h3>
+                        <p style="font-size: 1.1rem;"><strong>Different media</strong> types<br>(e.g., local drive + cloud)</p>
+                    </div>
+                </div>
+                <div class="column" style="background: var(--medallion); color: white; text-align: center; margin-top: 20px;">
+                    <h3 style="color: white; font-size: 3rem; margin: 0;">1</h3>
+                    <p style="font-size: 1.1rem;"><strong>Copy offsite</strong><br>(cloud, remote server, or physically separate location)</p>
+                </div>
+
+                <h3>Implementation Example</h3>
+                <ol>
+                    <li><strong>Copy 1 (Original):</strong> Your working files on your computer or institutional server</li>
+                    <li><strong>Copy 2 (Local backup):</strong> External hard drive, NAS device, or different institutional server</li>
+                    <li><strong>Copy 3 (Offsite backup):</strong> Cloud storage (institutional or commercial), remote server</li>
+                </ol>
+
+                <div class="highlight-box">
+                    <strong>Best Practices:</strong> Automate backups • Test restores regularly • Keep raw data read-only • Document your backup strategy
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 12: Encryption -->
+        <section class="slide" id="slide-12">
+            <div class="content-slide">
+                <h2>Encryption & Access Control</h2>
+
+                <h3>Types of Encryption</h3>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>🔐 Encryption at Rest</h4>
+                        <p>Protects data stored on devices (hard drives, USB drives)</p>
+                        <p><strong>Tools:</strong></p>
+                        <ul>
+                            <li>Windows: BitLocker</li>
+                            <li>Mac: FileVault</li>
+                            <li>Linux: LUKS</li>
+                            <li>Cross-platform: VeraCrypt</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>🔄 Encryption in Transit</h4>
+                        <p>Protects data being transferred (uploads, emails)</p>
+                        <p><strong>Methods:</strong></p>
+                        <ul>
+                            <li>HTTPS websites</li>
+                            <li>SFTP file transfers</li>
+                            <li>VPN connections</li>
+                            <li>Encrypted email</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box warning">
+                    <strong>⚠️ Critical Warning:</strong> If you forget your encryption password, your data may be permanently inaccessible. Store passwords securely using a password manager (LastPass, 1Password, Bitwarden, KeePass).
+                </div>
+
+                <h3>Access Control Principles</h3>
+                <ul>
+                    <li><strong>Principle of least privilege:</strong> Give collaborators only the access they need</li>
+                    <li><strong>Use unique accounts:</strong> Avoid shared logins to track who accessed what</li>
+                    <li><strong>Enable multi-factor authentication (MFA):</strong> Adds security beyond passwords</li>
+                    <li><strong>Review access periodically:</strong> Remove access when team members leave</li>
+                </ul>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 13: Activity 3 -->
+        <section class="slide" id="slide-13">
+            <div class="content-slide">
+                <h2>Activity 3: Audit Your Backup Strategy</h2>
+
+                <div class="activity-box">
+                    <h4>10 Minutes</h4>
+                    <div class="activity-content">
+                        <p>Answer these questions about your <strong>current most important research data</strong>:</p>
+
+                        <p><strong>1. Where is the original stored?</strong></p>
+                        <input type="text" class="activity-input" placeholder="e.g., My laptop, lab server, etc.">
+
+                        <p><strong>2. Where is your first backup?</strong></p>
+                        <input type="text" class="activity-input" placeholder="e.g., External hard drive, department server, etc.">
+
+                        <p><strong>3. Where is your second backup (offsite)?</strong></p>
+                        <input type="text" class="activity-input" placeholder="e.g., Cloud storage, remote server, etc.">
+
+                        <p><strong>4. When was the last backup made?</strong></p>
+                        <input type="text" class="activity-input" placeholder="e.g., Yesterday, last week, I don't know...">
+
+                        <div class="two-column" style="margin-top: 15px;">
+                            <div class="column" style="background: white;">
+                                <p><strong>5. Have you ever tested restoring from backup?</strong></p>
+                                <label><input type="radio" name="restore-test"> Yes</label>&nbsp;&nbsp;
+                                <label><input type="radio" name="restore-test"> No</label>
+                            </div>
+                            <div class="column" style="background: white;">
+                                <p><strong>6. Is any of your data encrypted?</strong></p>
+                                <label><input type="radio" name="encryption"> Yes</label>&nbsp;&nbsp;
+                                <label><input type="radio" name="encryption"> No</label>
+                            </div>
+                        </div>
+
+                        <p style="margin-top: 20px;"><strong>Gap Analysis:</strong> What's missing from your 3-2-1 setup? What action can you take this week?</p>
+                        <textarea class="activity-textarea" placeholder="Write your action item here..."></textarea>
+                    </div>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 14: Version Control -->
+        <section class="slide" id="slide-14">
+            <div class="content-slide">
+                <h2>Section 5: Version Control</h2>
+
+                <h3>Why Version Control?</h3>
+                <p>Version control tracks changes to files over time, allowing you to see what changed, when, and by whom. It prevents overwriting, enables recovery of previous versions, and supports collaboration without conflicts.</p>
+
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Simple: File Naming</h4>
+                        <p>For straightforward projects:</p>
+                        <ul>
+                            <li>Include version number: document_v01.docx</li>
+                            <li>Use dates: analysis_20260115.R</li>
+                            <li>Keep a changelog</li>
+                            <li>Archive old versions (don't delete)</li>
+                        </ul>
+                        <div class="code-example" style="font-size: 1rem; line-height: 2.2;">
+Version | Date       | Author | Changes
+v01     | 2026-01-10 | JDS    | Initial draft
+v02     | 2026-01-15 | JDS    | Added methods
+v03     | 2026-01-18 | MKT    | Revised stats
+                        </div>
+                    </div>
+                    <div class="column">
+                        <h4>Advanced: Git</h4>
+                        <p>For code and complex projects:</p>
+                        <ul>
+                            <li><strong>Repository:</strong> Project folder tracked by Git</li>
+                            <li><strong>Commit:</strong> Snapshot at a point in time</li>
+                            <li><strong>Branch:</strong> Parallel version for experiments</li>
+                            <li><strong>Remote:</strong> Copy on GitHub/GitLab</li>
+                        </ul>
+                        <p><strong>Getting Started:</strong></p>
+                        <ul>
+                            <li><a href="https://git-scm.com/downloads" target="_blank">Install Git</a></li>
+                            <li>Try GitHub Desktop (GUI)</li>
+                            <li><a href="https://swcarpentry.github.io/git-novice/" target="_blank">Software Carpentry Tutorial</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>When to use Git:</strong> Code, scripts, plain text files, configuration files<br>
+                    <strong>When to use file naming:</strong> Word documents, images, large binary files
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 15: Preparing for Sharing -->
+        <section class="slide" id="slide-15">
+            <div class="content-slide">
+                <h2>Section 6: Preparing Data for Sharing</h2>
+
+                <h3>File Format Selection</h3>
+                <p>Choose file formats that maximize long-term accessibility and reusability:</p>
+
+                <table class="data-table">
+                    <tr>
+                        <th>Data Type</th>
+                        <th>Preferred Formats</th>
+                        <th>Avoid</th>
+                    </tr>
+                    <tr>
+                        <td>Tabular data</td>
+                        <td>CSV, TSV</td>
+                        <td>Excel (.xlsx) for archiving</td>
+                    </tr>
+                    <tr>
+                        <td>Text</td>
+                        <td>Plain text (.txt), Markdown (.md), PDF/A</td>
+                        <td>Proprietary formats</td>
+                    </tr>
+                    <tr>
+                        <td>Images</td>
+                        <td>TIFF (uncompressed), PNG</td>
+                        <td>JPEG for scientific images</td>
+                    </tr>
+                    <tr>
+                        <td>Audio</td>
+                        <td>WAV, FLAC (lossless)</td>
+                        <td>MP3 (lossy compression)</td>
+                    </tr>
+                    <tr>
+                        <td>Video</td>
+                        <td>MP4 (H.264), uncompressed AVI</td>
+                        <td>Proprietary codecs</td>
+                    </tr>
+                    <tr>
+                        <td>Code</td>
+                        <td>Plain text source files (.R, .py, .m)</td>
+                        <td>Compiled binaries only</td>
+                    </tr>
+                </table>
+
+                <div class="highlight-box">
+                    <strong>Format Conversion Tips:</strong>
+                    <ul style="margin-bottom: 0;">
+                        <li>Keep original files in addition to converted versions</li>
+                        <li>Document any conversion process or settings used</li>
+                        <li>Verify converted files maintain all necessary information</li>
+                    </ul>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 16: De-identification -->
+        <section class="slide" id="slide-16">
+            <div class="content-slide">
+                <h2>De-identification of Human Subjects Data</h2>
+
+                <p>If sharing data collected from human participants, you must remove or mask identifying information. <strong>Consult your IRB for specific requirements.</strong></p>
+
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Direct Identifiers (Always Remove)</h4>
+                        <ul>
+                            <li>Names, addresses, phone numbers</li>
+                            <li>Email addresses</li>
+                            <li>Social Security numbers</li>
+                            <li>Medical record numbers</li>
+                            <li>Biometric identifiers (photos)</li>
+                            <li>IP addresses, account numbers</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>Indirect Identifiers (May Need Action)</h4>
+                        <ul>
+                            <li>Dates → use age ranges or relative dates</li>
+                            <li>Geography smaller than state → aggregate</li>
+                            <li>Age over 89 → aggregate to 90+</li>
+                            <li>Rare occupations → broader categories</li>
+                            <li>Race/ethnicity in small samples</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>De-identification Techniques</h3>
+                <table class="data-table">
+                    <tr>
+                        <th>Technique</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td>Removal</td>
+                        <td>Delete the variable entirely</td>
+                        <td>Remove "Name" column</td>
+                    </tr>
+                    <tr>
+                        <td>Suppression</td>
+                        <td>Replace values with blanks or codes</td>
+                        <td>"John Smith" → "P001"</td>
+                    </tr>
+                    <tr>
+                        <td>Generalization</td>
+                        <td>Reduce precision</td>
+                        <td>Age 34 → Age range 30-39</td>
+                    </tr>
+                    <tr>
+                        <td>Perturbation</td>
+                        <td>Add random noise</td>
+                        <td>Salary ± random amount</td>
+                    </tr>
+                    <tr>
+                        <td>k-anonymity</td>
+                        <td>Ensure each combo appears k+ times</td>
+                        <td>At least 5 people per cell</td>
+                    </tr>
+                </table>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 17: Activity 4 -->
+        <section class="slide" id="slide-17">
+            <div class="content-slide">
+                <h2>Activity 4: Data Sharing Preparation Checklist</h2>
+
+                <div class="activity-box">
+                    <h4>10 Minutes</h4>
+                    <div class="activity-content">
+                        <p>Review this checklist for a dataset you plan to share:</p>
+
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check1" onchange="toggleCheck(this)">
+                            <label for="check1">Files are in open, non-proprietary formats</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check2" onchange="toggleCheck(this)">
+                            <label for="check2">File names follow a consistent, documented convention</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check3" onchange="toggleCheck(this)">
+                            <label for="check3">A README file explains the dataset contents and context</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check4" onchange="toggleCheck(this)">
+                            <label for="check4">A data dictionary defines all variables</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check5" onchange="toggleCheck(this)">
+                            <label for="check5">Direct identifiers have been removed</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check6" onchange="toggleCheck(this)">
+                            <label for="check6">Indirect identifiers have been assessed and addressed</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check7" onchange="toggleCheck(this)">
+                            <label for="check7">Software/code needed to use the data is documented</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check8" onchange="toggleCheck(this)">
+                            <label for="check8">License/terms of use are specified</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="check9" onchange="toggleCheck(this)">
+                            <label for="check9">I have selected an appropriate repository</label>
+                        </div>
+
+                        <p style="margin-top: 20px;"><strong>What items are you missing? What do you need to do before sharing?</strong></p>
+                        <textarea class="activity-textarea" placeholder="List your action items..."></textarea>
+                    </div>
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 18: Summary -->
+        <section class="slide" id="slide-18">
+            <div class="content-slide">
+                <h2>Summary: Key Skills Covered</h2>
+
+                <div class="two-column">
+                    <div class="column">
+                        <div class="key-point">
+                            <div class="key-point-icon">1</div>
+                            <div><strong>File Organization</strong><br>Naming conventions & folder structure</div>
+                        </div>
+                        <div class="key-point">
+                            <div class="key-point-icon">2</div>
+                            <div><strong>Documentation</strong><br>READMEs, data dictionaries, codebooks</div>
+                        </div>
+                        <div class="key-point">
+                            <div class="key-point-icon">3</div>
+                            <div><strong>Metadata</strong><br>Discipline-appropriate standards</div>
+                        </div>
+                        <div class="key-point">
+                            <div class="key-point-icon">4</div>
+                            <div><strong>Backup</strong><br>3-2-1 strategy implementation</div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="key-point">
+                            <div class="key-point-icon">5</div>
+                            <div><strong>Security</strong><br>Encryption & access controls</div>
+                        </div>
+                        <div class="key-point">
+                            <div class="key-point-icon">6</div>
+                            <div><strong>Version Control</strong><br>Tracking changes systematically</div>
+                        </div>
+                        <div class="key-point">
+                            <div class="key-point-icon">7</div>
+                            <div><strong>Sharing Preparation</strong><br>Formats & de-identification</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Quick Wins: Actions You Can Take This Week</h3>
+                <ul>
+                    <li>☐ Write a file naming convention and document it in a README</li>
+                    <li>☐ Set up automated backups if you don't have them</li>
+                    <li>☐ Enable full-disk encryption on your laptop (BitLocker or FileVault)</li>
+                    <li>☐ Create a data dictionary for one dataset</li>
+                    <li>☐ Test restoring from one of your backups</li>
+                </ul>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+
+        <!-- Slide 19: Resources & Final Activity -->
+        <section class="slide" id="slide-19">
+            <div class="content-slide">
+                <h2>Resources & Final Activity</h2>
+
+                <h3>Helpful Resources</h3>
+                <ul>
+                    <li><a href="https://data.research.cornell.edu/data-management/sharing/readme/" target="_blank">Cornell README Template</a></li>
+                    <li><a href="https://datamanagement.hms.harvard.edu/plan-design/file-naming-conventions" target="_blank">Harvard File Naming Worksheet</a></li>
+                    <li><a href="https://rd-alliance.github.io/metadata-directory/standards/" target="_blank">RDA Metadata Standards Catalog</a></li>
+                    <li><a href="https://fairsharing.org/" target="_blank">FAIRsharing.org</a></li>
+                    <li><a href="https://swcarpentry.github.io/git-novice/" target="_blank">Software Carpentry Git Lessons</a></li>
+                    <li><a href="https://www.povertyactionlab.org/resource/data-security-procedures-researchers" target="_blank">J-PAL Data Security Procedures</a></li>
+                </ul>
+
+                <div class="activity-box">
+                    <h4>Final Activity: Personal Action Plan (5 Minutes)</h4>
+                    <div class="activity-content">
+                        <p><strong>My biggest data management weakness is:</strong></p>
+                        <input type="text" class="activity-input" placeholder="Be honest with yourself...">
+
+                        <p><strong>One action I will take THIS WEEK:</strong></p>
+                        <input type="text" class="activity-input" placeholder="Something specific and achievable...">
+
+                        <p><strong>One action I will take THIS MONTH:</strong></p>
+                        <input type="text" class="activity-input" placeholder="A bigger goal...">
+
+                        <p><strong>I will ask for help from:</strong></p>
+                        <input type="text" class="activity-input" placeholder="Library, IT, colleague, etc.">
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="text-align: center; margin-top: 30px;">
+                    <strong>Thank you for attending!</strong><br><br>
+                    <strong>Kay P Maye</strong><br>
+                    Howard-Tilton Memorial Library | Tulane University<br>
+                    Questions? Contact your subject librarian or research data services.
+                </div>
+
+                <div class="slide-footer">Kay P Maye | Tulane University Libraries</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Email Panel Toggle Button -->
+    <button class="email-panel-toggle" onclick="toggleEmailPanel()" title="Email my responses">
+        <span class="icon">📧</span>
+        <span>Email My Responses</span>
+    </button>
+
+    <!-- Email Panel -->
+    <div class="email-panel" id="emailPanel">
+        <button class="close-btn" onclick="toggleEmailPanel()">&times;</button>
+        <h3>📧 Email Your Responses</h3>
+        <p class="subtitle">Send your workshop activity responses to yourself for future reference.</p>
+        
+        <div class="success-message" id="successMessage">
+            ✓ Email client opened! Check your email application.
+        </div>
+
+        <div class="response-count" id="responseCount">0 responses collected</div>
+        
+        <div class="response-preview" id="responsePreview">
+            <em>Complete activities in the presentation to see your responses here.</em>
+        </div>
+
+        <label for="respondentName">Your Name (optional)</label>
+        <input type="text" id="respondentName" placeholder="Enter your name">
+
+        <label for="respondentEmail">Your Email Address</label>
+        <input type="email" id="respondentEmail" placeholder="your.email@example.com">
+
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="previewResponses()">Preview</button>
+            <button class="btn btn-primary" onclick="emailResponses()">Send Email</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 20;
+
+        function updateSlide() {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            // Show current slide
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+
+            // Update selector
+            document.getElementById('slideSelector').value = currentSlide;
+
+            // Update page indicator
+            document.getElementById('pageIndicator').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function changeSlide(direction) {
+            const newSlide = currentSlide + direction;
+            if (newSlide >= 0 && newSlide < totalSlides) {
+                currentSlide = newSlide;
+                updateSlide();
+            }
+        }
+
+        function goToSlide(slideIndex) {
+            currentSlide = parseInt(slideIndex);
+            updateSlide();
+        }
+
+        function toggleCheck(checkbox) {
+            const item = checkbox.closest('.checklist-item');
+            if (checkbox.checked) {
+                item.classList.add('checked');
+            } else {
+                item.classList.remove('checked');
+            }
+            updateResponseCount();
+        }
+
+        // Email functionality
+        function toggleEmailPanel() {
+            const panel = document.getElementById('emailPanel');
+            panel.classList.toggle('active');
+            if (panel.classList.contains('active')) {
+                updateResponseCount();
+                previewResponses();
+            }
+        }
+
+        function collectResponses() {
+            const responses = [];
+            
+            // Activity 1: File Naming Convention (Slide 4)
+            const slide4 = document.getElementById('slide-4');
+            if (slide4) {
+                const inputs = slide4.querySelectorAll('.activity-input, .activity-textarea');
+                const activity1 = {
+                    title: 'Activity 1: Design Your File Naming Convention',
+                    items: []
+                };
+                
+                const labels = [
+                    'Key elements that distinguish files',
+                    'Naming template',
+                    'Example file name 1',
+                    'Example file name 2',
+                    'Example file name 3',
+                    'Abbreviations used'
+                ];
+                
+                inputs.forEach((input, index) => {
+                    if (input.value.trim()) {
+                        activity1.items.push({
+                            label: labels[index] || `Field ${index + 1}`,
+                            value: input.value.trim()
+                        });
+                    }
+                });
+                
+                if (activity1.items.length > 0) responses.push(activity1);
+            }
+
+            // Activity 2: Data Dictionary (Slide 7)
+            const slide7 = document.getElementById('slide-7');
+            if (slide7) {
+                const activity2 = {
+                    title: 'Activity 2: Create a Data Dictionary',
+                    items: []
+                };
+                
+                const tableInputs = slide7.querySelectorAll('.data-table input');
+                const columns = ['Variable Name', 'Description', 'Data Type', 'Units/Values'];
+                
+                for (let row = 0; row < 5; row++) {
+                    const rowData = [];
+                    let hasData = false;
+                    
+                    for (let col = 0; col < 4; col++) {
+                        const input = tableInputs[row * 4 + col];
+                        if (input && input.value.trim()) {
+                            rowData.push(`${columns[col]}: ${input.value.trim()}`);
+                            hasData = true;
+                        }
+                    }
+                    
+                    if (hasData) {
+                        activity2.items.push({
+                            label: `Variable ${row + 1}`,
+                            value: rowData.join(' | ')
+                        });
+                    }
+                }
+                
+                const reflection = slide7.querySelector('.activity-textarea');
+                if (reflection && reflection.value.trim()) {
+                    activity2.items.push({
+                        label: 'Reflection',
+                        value: reflection.value.trim()
+                    });
+                }
+                
+                if (activity2.items.length > 0) responses.push(activity2);
+            }
+
+            // Activity 3: Backup Strategy Audit (Slide 13)
+            const slide13 = document.getElementById('slide-13');
+            if (slide13) {
+                const activity3 = {
+                    title: 'Activity 3: Audit Your Backup Strategy',
+                    items: []
+                };
+                
+                const inputs = slide13.querySelectorAll('.activity-input');
+                const labels = [
+                    'Original data location',
+                    'First backup location',
+                    'Second backup (offsite) location',
+                    'Last backup date'
+                ];
+                
+                inputs.forEach((input, index) => {
+                    if (input.value.trim()) {
+                        activity3.items.push({
+                            label: labels[index] || `Field ${index + 1}`,
+                            value: input.value.trim()
+                        });
+                    }
+                });
+                
+                // Radio buttons
+                const restoreTest = slide13.querySelector('input[name="restore-test"]:checked');
+                if (restoreTest) {
+                    activity3.items.push({
+                        label: 'Tested restoring from backup',
+                        value: restoreTest.nextSibling.textContent.trim()
+                    });
+                }
+                
+                const encryption = slide13.querySelector('input[name="encryption"]:checked');
+                if (encryption) {
+                    activity3.items.push({
+                        label: 'Data encrypted',
+                        value: encryption.nextSibling.textContent.trim()
+                    });
+                }
+                
+                const gapAnalysis = slide13.querySelector('.activity-textarea');
+                if (gapAnalysis && gapAnalysis.value.trim()) {
+                    activity3.items.push({
+                        label: 'Gap analysis / Action items',
+                        value: gapAnalysis.value.trim()
+                    });
+                }
+                
+                if (activity3.items.length > 0) responses.push(activity3);
+            }
+
+            // Activity 4: Data Sharing Checklist (Slide 17)
+            const slide17 = document.getElementById('slide-17');
+            if (slide17) {
+                const activity4 = {
+                    title: 'Activity 4: Data Sharing Preparation Checklist',
+                    items: []
+                };
+                
+                const checkboxes = slide17.querySelectorAll('.checklist-item input[type="checkbox"]');
+                const checklistLabels = [
+                    'Files in open, non-proprietary formats',
+                    'Consistent, documented file naming convention',
+                    'README file explains dataset',
+                    'Data dictionary defines all variables',
+                    'Direct identifiers removed',
+                    'Indirect identifiers assessed',
+                    'Software/code documented',
+                    'License/terms specified',
+                    'Repository selected'
+                ];
+                
+                const completed = [];
+                const notCompleted = [];
+                
+                checkboxes.forEach((checkbox, index) => {
+                    if (checkbox.checked) {
+                        completed.push(checklistLabels[index]);
+                    } else {
+                        notCompleted.push(checklistLabels[index]);
+                    }
+                });
+                
+                if (completed.length > 0) {
+                    activity4.items.push({
+                        label: 'Completed items',
+                        value: completed.join('; ')
+                    });
+                }
+                
+                if (notCompleted.length > 0) {
+                    activity4.items.push({
+                        label: 'Items to complete',
+                        value: notCompleted.join('; ')
+                    });
+                }
+                
+                const actionItems = slide17.querySelector('.activity-textarea');
+                if (actionItems && actionItems.value.trim()) {
+                    activity4.items.push({
+                        label: 'Action items before sharing',
+                        value: actionItems.value.trim()
+                    });
+                }
+                
+                if (activity4.items.length > 0) responses.push(activity4);
+            }
+
+            // Activity 5: Personal Action Plan (Slide 19)
+            const slide19 = document.getElementById('slide-19');
+            if (slide19) {
+                const activity5 = {
+                    title: 'Activity 5: Personal Action Plan',
+                    items: []
+                };
+                
+                const inputs = slide19.querySelectorAll('.activity-input');
+                const labels = [
+                    'Biggest data management weakness',
+                    'Action for this week',
+                    'Action for this month',
+                    'Who I will ask for help'
+                ];
+                
+                inputs.forEach((input, index) => {
+                    if (input.value.trim()) {
+                        activity5.items.push({
+                            label: labels[index] || `Field ${index + 1}`,
+                            value: input.value.trim()
+                        });
+                    }
+                });
+                
+                if (activity5.items.length > 0) responses.push(activity5);
+            }
+
+            return responses;
+        }
+
+        function countResponses() {
+            const responses = collectResponses();
+            let count = 0;
+            responses.forEach(activity => {
+                count += activity.items.length;
+            });
+            return count;
+        }
+
+        function updateResponseCount() {
+            const count = countResponses();
+            const countEl = document.getElementById('responseCount');
+            if (countEl) {
+                countEl.textContent = `${count} response${count !== 1 ? 's' : ''} collected`;
+            }
+        }
+
+        function previewResponses() {
+            const responses = collectResponses();
+            const preview = document.getElementById('responsePreview');
+            
+            if (responses.length === 0) {
+                preview.innerHTML = '<em>Complete activities in the presentation to see your responses here.</em>';
+                return;
+            }
+            
+            let html = '';
+            responses.forEach(activity => {
+                html += `<h4>${activity.title}</h4>`;
+                html += '<ul style="margin: 5px 0 15px 20px; padding: 0;">';
+                activity.items.forEach(item => {
+                    const truncatedValue = item.value.length > 100 
+                        ? item.value.substring(0, 100) + '...' 
+                        : item.value;
+                    html += `<li style="margin-bottom: 5px;"><strong>${item.label}:</strong> ${truncatedValue}</li>`;
+                });
+                html += '</ul>';
+            });
+            
+            preview.innerHTML = html;
+            updateResponseCount();
+        }
+
+        function formatResponsesForEmail() {
+            const responses = collectResponses();
+            const name = document.getElementById('respondentName').value.trim();
+            const date = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let text = 'HANDS-ON RESEARCH DATA MANAGEMENT WORKSHOP\n';
+            text += 'Activity Responses\n';
+            text += '═══════════════════════════════════════════\n\n';
+            
+            if (name) {
+                text += `Participant: ${name}\n`;
+            }
+            text += `Date: ${date}\n`;
+            text += `Workshop Presenter: Kay P Maye\n`;
+            text += `Institution: Tulane University Libraries\n\n`;
+            text += '═══════════════════════════════════════════\n\n';
+            
+            if (responses.length === 0) {
+                text += 'No activity responses were recorded.\n';
+                text += 'Please complete the activities in the presentation and try again.';
+                return text;
+            }
+            
+            responses.forEach((activity, index) => {
+                text += `${activity.title.toUpperCase()}\n`;
+                text += '───────────────────────────────────────────\n';
+                
+                activity.items.forEach(item => {
+                    text += `\n• ${item.label}:\n  ${item.value}\n`;
+                });
+                
+                text += '\n\n';
+            });
+            
+            text += '═══════════════════════════════════════════\n';
+            text += 'END OF RESPONSES\n\n';
+            text += 'For questions about research data management,\n';
+            text += 'contact your subject librarian or research data services.\n';
+            
+            return text;
+        }
+
+        function emailResponses() {
+            const email = document.getElementById('respondentEmail').value.trim();
+            const name = document.getElementById('respondentName').value.trim();
+            
+            if (!email) {
+                alert('Please enter your email address.');
+                document.getElementById('respondentEmail').focus();
+                return;
+            }
+            
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address.');
+                document.getElementById('respondentEmail').focus();
+                return;
+            }
+            
+            const responses = collectResponses();
+            if (responses.length === 0) {
+                if (!confirm('You haven\'t completed any activities yet. Do you still want to send an email?')) {
+                    return;
+                }
+            }
+            
+            const subject = encodeURIComponent('My RDM Workshop Responses - ' + new Date().toLocaleDateString());
+            const body = encodeURIComponent(formatResponsesForEmail());
+            
+            // Create mailto link
+            const mailtoLink = `mailto:${email}?subject=${subject}&body=${body}`;
+            
+            // Open email client
+            window.location.href = mailtoLink;
+            
+            // Show success message
+            const successMsg = document.getElementById('successMessage');
+            successMsg.classList.add('show');
+            
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 5000);
+        }
+
+        // Update response count when inputs change
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('activity-input') || 
+                e.target.classList.contains('activity-textarea')) {
+                updateResponseCount();
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox' || e.target.type === 'radio') {
+                updateResponseCount();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                changeSlide(-1);
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                currentSlide = 0;
+                updateSlide();
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                currentSlide = totalSlides - 1;
+                updateSlide();
+            }
+        });
+
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>
